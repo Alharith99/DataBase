@@ -1,0 +1,71 @@
+
+Error starting at line : 3 in command -
+ALTER TABLE Department
+ADD CONSTRAINT fk_emp_manager
+FOREIGN KEY (Manager_SSN)
+REFERENCES Employees(Employee_SSN)
+Error report -
+ORA-02275: such a referential constraint already exists in the table
+
+https://docs.oracle.com/error-help/db/ora-02275/02275. 00000 -  "such a referential constraint already exists in the table"
+*Cause:    Self-evident.
+*Action:   Remove the extra constraint.
+Name              Null?    Type
+----------------- -------- -------------
+DEPARTMENT_NUMBER NOT NULL NUMBER
+DEPARTMENT_NAME   NOT NULL VARCHAR2(100)
+LOCATION                   VARCHAR2(100)
+MANAGER_SSN                NUMBER
+HIRING_DATE                DATE
+
+Table DEPARTMENT altered.
+
+
+Error starting at line : 6 in command -
+    REFERENCES Department(Department_name)
+Error report -
+Unknown Command
+
+
+Error starting at line : 4 in command -
+    ALTER TABLE Employees
+    ADD CONSTRAINT fk_emp_dept_name
+    FOREIGN KEY (D_name)
+    REFERENCES Department(Department_name)
+Error report -
+ORA-00904: "D_NAME": invalid identifier
+
+https://docs.oracle.com/error-help/db/ora-00904/00904. 00000 -  "%s: invalid identifier"
+*Cause:    The identifier or column name entered was invalid.
+*Action:   Ensure the following
+
+Table EMPLOYEES altered.
+
+
+Table EMPLOYEES altered.
+
+
+Table PROJECT created.
+
+
+Table PROJECT_WORK created.
+
+
+CREATE TABLE Dependent (
+    Dependent_ID NUMBER PRIMARY KEY,
+    Dependent_Name VARCHAR2(50),
+    Birth_Date DATE,
+    Gender CHAR(1),
+    Employee_SSN NUMBER,
+    CONSTRAINT fk_emp_dep FOREIGN KEY (Employee_SSN)
+        REFERENCES Employees(Employee_SSN)
+);
+
+
+CREATE TABLE Locations (
+    Location VARCHAR2(50),
+    Department_Number NUMBER,
+    CONSTRAINT pk_locations PRIMARY KEY (Location, Department_Number),
+    CONSTRAINT fk_dept_loc FOREIGN KEY (Department_Number)
+        REFERENCES Department(Department_Number)
+);
