@@ -1,0 +1,153 @@
+- Key Relations:
+COUNTRIES.REGION_ID  →  REGIONS.REGION_ID
+LOCATIONS.COUNTRY_ID  →  COUNTRIES.COUNTRY_ID
+DEPARTMENTS.LOCATION_ID  →  LOCATIONS.LOCATION_ID
+DEPARTMENTS.MANAGER_ID  →  EMPLOYEES.EMPLOYEE_ID
+EMPLOYEES.DEPARTMENT_ID  →  DEPARTMENTS.DEPARTMENT_ID
+EMPLOYEES.JOB_ID  →  JOBS.JOB_ID
+
+
+
+- Employee & Department Reports:
+SELECT e.employee_id,
+       e.first_name || ' ' || e.last_name AS full_name,
+       d.department_name
+FROM employees e
+JOIN departments d
+ON e.department_id = d.department_id;
+
+
+SELECT e.employee_id,
+       e.first_name || ' ' || e.last_name AS full_name,
+       j.job_title,
+       e.salary
+FROM employees e
+JOIN jobs j
+ON e.job_id = j.job_id;
+
+
+SELECT e.first_name || ' ' || e.last_name AS employee,
+       d.department_name,
+       l.city
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+JOIN locations l ON d.location_id = l.location_id;
+
+
+SELECT e.first_name || ' ' || e.last_name AS employee,
+       d.department_name,
+       c.country_name,
+       r.region_name
+FROM employees e
+JOIN departments d ON e.department_id = d.department_id
+JOIN locations l ON d.location_id = l.location_id
+JOIN countries c ON l.country_id = c.country_id
+JOIN regions r ON c.region_id = r.region_id;
+
+
+
+- ORGANIZATION STRUCTURE ANALYSIS:
+SELECT e.employee_id,
+       e.first_name || ' ' || e.last_name AS employee,
+       d.department_name
+FROM employees e
+LEFT JOIN departments d
+ON e.department_id = d.department_id;
+
+
+SELECT d.department_id,
+       d.department_name,
+       e.employee_id
+FROM departments d
+LEFT JOIN employees e
+ON d.department_id = e.department_id;
+
+
+SELECT d.department_id,
+       d.department_name
+FROM departments d
+LEFT JOIN employees e
+ON d.department_id = e.department_id
+WHERE e.employee_id IS NULL;
+
+
+
+- MANAGEMENT HIERARCHY ANALYSIS:
+SELECT e.first_name || ' ' || e.last_name AS employee,
+       m.first_name || ' ' || m.last_name AS manager
+FROM employees e
+LEFT JOIN employees m
+ON e.manager_id = m.employee_id;
+
+
+SELECT employee_id,
+       first_name,
+       last_name
+FROM employees
+WHERE manager_id IS NULL;
+
+
+
+- ADVANCED BUSINESS ANALYSIS:
+SELECT e.employee_id,
+       e.first_name || ' ' || e.last_name AS employee,
+       e.salary AS employee_salary,
+       m.first_name || ' ' || m.last_name AS manager,
+       m.salary AS manager_salary
+FROM employees e
+JOIN employees m
+ON e.manager_id = m.employee_id
+WHERE e.salary > m.salary;
+
+
+SELECT d.department_name,
+       e.first_name || ' ' || e.last_name AS manager
+FROM departments d
+JOIN employees e
+ON d.manager_id = e.employee_id
+WHERE e.department_id = d.department_id;
+
+
+
+- EXECUTIVE DASHBOARD REPORTS:
+SELECT e.first_name || ' ' || e.last_name AS employee,
+       j.job_title,
+       d.department_name,
+       l.city,
+       c.country_name
+FROM employees e
+JOIN jobs j ON e.job_id = j.job_id
+JOIN departments d ON e.department_id = d.department_id
+JOIN locations l ON d.location_id = l.location_id
+JOIN countries c ON l.country_id = c.country_id;
+
+
+SELECT d.department_name,
+       e.first_name || ' ' || e.last_name AS manager,
+       l.city,
+       c.country_name
+FROM departments d
+LEFT JOIN employees e ON d.manager_id = e.employee_id
+JOIN locations l ON d.location_id = l.location_id
+JOIN countries c ON l.country_id = c.country_id;
+
+
+SELECT e.employee_id,
+       e.first_name || ' ' || e.last_name AS employee
+FROM employees e
+JOIN employees m ON e.manager_id = m.employee_id
+WHERE e.department_id = m.department_id;
+
+
+SELECT e.employee_id,
+       e.first_name || ' ' || e.last_name AS employee,
+       m.first_name || ' ' || m.last_name AS manager
+FROM employees e
+JOIN employees m ON e.manager_id = m.employee_id
+WHERE e.department_id <> m.department_id;
+
+
+SELECT DISTINCT c.country_name
+FROM departments d
+JOIN locations l ON d.location_id = l.location_id
+JOIN countries c ON l.country_id = c.country_id;
