@@ -1,0 +1,53 @@
+- Innter join:
+SELECT e.employee_ssn,
+       e.first_name,
+       e.last_name,
+       d.department_name,
+       pw.project_name
+FROM employees e
+INNER JOIN department d
+    ON e.d_name = d.department_name
+INNER JOIN project_work pw
+    ON d.department_name = pw.department_name;
+
+
+
+- Left join:
+SELECT e.employee_ssn,
+       e.first_name,
+       e.last_name,
+       d.department_name,
+       dp.dependent_name,
+       dp.gender
+FROM employees e
+LEFT JOIN department d
+    ON e.d_name = d.department_name
+LEFT JOIN dependent dp
+    ON e.employee_ssn = dp.employee_ssn;
+
+
+
+- Right join:
+SELECT p.project_name,
+       d.department_name,
+       e.first_name,
+       e.last_name
+FROM employees e
+RIGHT JOIN department d
+    ON e.d_name = d.department_name
+RIGHT JOIN project_work pw
+    ON d.department_name = pw.department_name
+RIGHT JOIN project p
+    ON pw.project_name = p.project_name;
+
+
+
+- Self join:
+SELECT e.first_name || ' ' || e.last_name AS employee_name,
+       s.first_name || ' ' || s.last_name AS supervisor_name,
+       d.department_name
+FROM employees e
+LEFT JOIN employees s
+    ON e.supervisor_ssn = s.employee_ssn
+INNER JOIN department d
+    ON e.d_name = d.department_name;
