@@ -1,0 +1,147 @@
+- Case1:
+SELECT First_Name,
+       Last_Name,
+       Gender,
+       Birth_Date
+FROM Employees;
+
+Query Result:
+   First_Name    Last_Name     Gender      Birth_Date
+1   Salim	     Alharthi	     M	       12-SEP-87
+2   Ahmed	     Alabri	         M	       10-MAY-85
+3   Abeer	     Alraisi	     F	       15-JUL-90
+4   Mohammed	 Alhinai	     M	       20-NOV-88
+5   Usama	     Almalki	     M	       18-JUN-99
+
+
+
+- Case2:
+SELECT *
+FROM Employees
+WHERE D_Name = 'IT';
+
+Query Result:
+   Employee_SSN   First_Name   Last_Name   Gender   Birth_Date   Supervisor_SSN   D_Name
+1     1002         Abeer        Alraisi      F      15-JUL-90       null           IT
+
+
+
+- Case3:
+SELECT Project_Name,
+       Location,
+       City
+FROM Project;
+
+Query Result:
+   Project_Name              Location              City
+
+1  Warehouse System        Logistics Center        Sur
+2  Marketing Application   Branch Office          Nizwa
+3  Audit Management        Finance Tower         Salalah
+4  ERP Upgrade             Building A             Sohar
+5  Payroll System          Head Office           Muscat
+
+
+
+- Case4:
+SELECT d.Department_Name,
+       e.First_Name,
+       e.Last_Name,
+       d.Hiring_Date
+FROM Department d
+JOIN Employees e
+ON d.Manager_SSN = e.Employee_SSN;
+
+Query Result:
+   Department_Name     First_Name    Last_Name      Hiring_Date
+
+1       HR	             Ahmed	      Alabri	     15-JAN-22
+2       IT	             Abeer	      Alraisi	     10-MAR-21
+3     Finance	         Ahmed	      Alabri	     20-JUN-20
+4    Operations	         Salim	      Alharthi	     01-JAN-23
+
+
+
+- Case5:
+SELECT *
+FROM Dependent
+WHERE Employee_SSN = 1002;
+
+Query Result:
+   Dependent_ID    Department_Name     Birth_Date     Gender     Employee_SSN
+
+1       2	        Mohammed Ahmed	   20-SEP-12	    M           1002
+
+
+
+- Case6:
+SELECT e.First_Name,
+       e.Last_Name,
+       pw.Work_Hours
+FROM Employees e
+JOIN Project_Work pw
+ON e.D_Name = pw.Department_Name
+WHERE pw.Project_Name = 'Warehouse System';
+
+Query Result:
+   First_Name     Last_Name     Work_Hours
+1   Salim         Alharthi          20
+
+
+
+- Case7:
+SELECT Department_Name,
+       Location
+FROM Department;
+
+Query Result:
+   Department_Name     Location
+1       HR              Nizwa
+2       IT              Muscat
+3     Finance           Muscat
+4    Operations         Sohar
+5    Marketing          Muscat
+
+
+
+- Case8:
+SELECT First_Name,
+       Last_Name,
+       Supervisor_SSN
+FROM Employees
+WHERE Supervisor_SSN = 1001;
+
+Query Result:
+   First_Name     Last_Name     Supervisor_SSN
+1   Abeer         Alraisi           1001
+2   Mohammed      Alhanai           1001
+
+
+
+- Case9:
+SELECT p.Project_Name,
+       p.Location,
+       p.City,
+       pw.Department_Name,
+       pw.Work_Hours
+FROM Project_Work pw
+JOIN Project p
+ON pw.Project_Name = p.Project_Name
+WHERE pw.Department_Name = 'FINANCE';
+
+Query Result:
+"empty"
+
+
+
+- Case10:
+SELECT Dependent_Name,
+       Birth_Date,
+       Gender
+FROM Dependent
+WHERE Gender = 'M';
+
+Query Result:
+   Dependent_Name       Birth_Date       Gender
+1   Ali Salem           10-JUL-17          M
+2   Mohammed Ahmed      20-SEP-12          M
