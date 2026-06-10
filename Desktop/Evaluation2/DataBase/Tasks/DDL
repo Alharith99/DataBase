@@ -51,6 +51,7 @@ Table PROJECT created.
 Table PROJECT_WORK created.
 
 
+
 CREATE TABLE Dependent (
     Dependent_ID NUMBER PRIMARY KEY,
     Dependent_Name VARCHAR2(50),
