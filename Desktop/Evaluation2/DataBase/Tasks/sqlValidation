@@ -1,0 +1,37 @@
+SELECT e.first_name, e.last_name, d.department_name
+FROM employees e
+JOIN departments d
+ON e.employee_id = d.department_id;
+
+- I think the Query Result is okey and the logic true.
+
+
+
+SELECT e.first_name, e.last_name, j.job_title
+FROM employees e
+JOIN jobs j
+ON e.employee_id = j.job_id;
+
+-  The logic is wrong because employee_id is number while
+the job_id is value.
+
+
+
+SELECT e.first_name, d.department_name
+FROM employees e
+LEFT JOIN departments d
+ON e.department_id = d.department_id
+WHERE d.department_name = 'Sales';
+
+- The Query Result should give you the first_name of the employees
+those are work in Sales.
+
+
+
+SELECT e.first_name, m.first_name AS manager_name
+FROM employees e
+JOIN employees m
+ON e.employee_id = m.manager_id;
+
+- The Query Result should give you the first_name of the employees
+and their manager_name.
