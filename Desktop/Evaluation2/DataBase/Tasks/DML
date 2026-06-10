@@ -1,0 +1,21 @@
+INSERT INTO employees
+(Employee_SSN, First_name, Last_name, Gender,
+ Birth_Date, Supervisor_SSN, D_Name)
+VALUES
+(1004, 'Usama', 'Almalki', 'M',
+ DATE '1999-06-18', null, null);
+
+Script Output: 1 row inserted.
+
+
+ UPDATE Employees
+SET D_Name = 'IT'
+WHERE Employee_SSN = 1002;
+
+Script Output: 1 row updated.
+
+
+DELETE FROM Dependent
+WHERE Employee_SSN = 1002;
+
+Script Output: 0 rows deleted.
