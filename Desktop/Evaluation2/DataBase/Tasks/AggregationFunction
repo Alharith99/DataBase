@@ -1,0 +1,80 @@
+SELECT first_name,
+       last_name,
+       hire_date
+FROM employees;
+
+
+
+SELECT *
+FROM employees
+WHERE department_id = (
+    SELECT department_id
+    FROM departments
+    WHERE department_name = 'IT'
+);
+
+
+
+SELECT street_address,
+       city
+FROM locations;
+
+
+
+SELECT d.department_name,
+       e.first_name,
+       e.last_name,
+       e.hire_date
+FROM departments d
+JOIN employees e
+ON d.manager_id = e.employee_id;
+
+
+
+SELECT first_name,
+       last_name,
+       manager_id
+FROM employees
+WHERE manager_id = 101;
+
+
+
+SELECT e.first_name,
+       e.last_name,
+       jh.job_id,
+       jh.start_date,
+       jh.end_date
+FROM job_history jh
+JOIN employees e
+ON jh.employee_id = e.employee_id
+WHERE jh.job_id = 'IT_PROG';
+
+
+
+SELECT d.department_name,
+       l.city,
+       l.street_address
+FROM departments d
+JOIN locations l
+ON d.location_id = l.location_id;
+
+
+
+SELECT j.job_title,
+       j.min_salary,
+       j.max_salary
+FROM jobs j
+JOIN job_history jh
+ON j.job_id = jh.job_id
+WHERE jh.department_id = (
+    SELECT department_id
+    FROM departments
+    WHERE department_name = 'IT'
+);
+
+
+
+SELECT first_name,
+       last_name
+FROM employees
+WHERE UPPER(job_id) LIKE '%MAN%';
