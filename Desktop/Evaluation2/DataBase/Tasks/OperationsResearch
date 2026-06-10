@@ -1,0 +1,54 @@
+### UNION
+Combines results from two queries and removes duplicates.
+
+Example:
+SELECT Department_Name FROM Department
+UNION
+SELECT Department_Name FROM Project_Work;
+
+Result: Unique department names only.
+
+
+
+### UNION ALL
+Combines results from two queries and keeps duplicates.
+
+Example:
+SELECT Department_Name FROM Department
+UNION ALL
+SELECT Department_Name FROM Project_Work;
+
+Result: All rows, including repeated department names.
+
+
+
+### INTERSECT
+Returns only rows that exist in both queries.
+
+Example:
+
+SELECT Department_Name FROM Department
+INTERSECT
+SELECT Department_Name FROM Project_Work;
+
+Result: Departments that have projects assigned.
+
+Differences between them:
+Operation        Purpose          	Duplicates
+
+UNION	      Combine results         Removed
+UNION ALL	  Combine results	       Kept
+INTERSECT	  Common rows only	      Removed
+
+
+### In addition:
+There is another set of operation called "MINUS"
+it Returns rows from the first query that are not
+in the second query.
+
+Example:
+SELECT Department_Name FROM Department
+MINUS
+SELECT Department_Name FROM Project_Work;
+
+Result: Departments with no projects.
