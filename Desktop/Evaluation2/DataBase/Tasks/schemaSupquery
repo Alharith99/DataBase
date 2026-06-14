@@ -1,0 +1,231 @@
+1. Salary Analysis Using Subqueries
+
+// Employees earning more than company average:
+SELECT first_name, salary
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+// Employees earning less than highest salary:
+SELECT first_name, salary
+FROM employees
+WHERE salary < (SELECT MAX(salary) FROM employees);
+
+// Departments whose avg salary > company avg:
+SELECT department_id
+FROM employees
+GROUP BY department_id
+HAVING AVG(salary) > (SELECT AVG(salary) FROM employees);
+
+// Employees earning highest salary in their department:
+SELECT first_name, salary, department_id
+FROM employees e
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM employees
+    WHERE department_id = e.department_id
+);
+
+
+
+2. Department & Location Analysis
+
+// Employees in USA departments:
+SELECT first_name
+FROM employees
+WHERE department_id IN (
+    SELECT department_id
+    FROM departments
+    WHERE location_id IN (
+        SELECT location_id
+        FROM locations
+        WHERE country_id = 'US'
+    )
+);
+
+// Departments that contain employees:
+SELECT department_id
+FROM departments
+WHERE department_id IN (
+    SELECT DISTINCT department_id
+    FROM employees
+);
+
+// Departments with no employees:
+SELECT department_id
+FROM departments
+WHERE department_id NOT IN (
+    SELECT DISTINCT department_id
+    FROM employees
+);
+
+// Employees in Europe region:
+SELECT first_name
+FROM employees
+WHERE department_id IN (
+    SELECT department_id
+    FROM departments
+    WHERE location_id IN (
+        SELECT location_id
+        FROM locations
+        WHERE country_id IN (
+            SELECT country_id
+            FROM countries
+            WHERE region_id IN (
+                SELECT region_id
+                FROM regions
+                WHERE region_name = 'Europe'
+            )
+        )
+    )
+);
+
+
+3. Manager & Hierarchy Analysis
+
+// Employees earning more than their manager:
+SELECT first_name, salary, manager_id
+FROM employees e
+WHERE salary > (
+    SELECT salary
+    FROM employees
+    WHERE employee_id = e.manager_id
+);
+
+// Managers whose employees earn > 10000:
+SELECT DISTINCT manager_id
+FROM employees
+WHERE employee_id IN (
+    SELECT manager_id
+    FROM employees
+)
+AND employee_id IN (
+    SELECT employee_id
+    FROM employees
+    WHERE salary > 10000
+);
+
+// Employees whose manager is in same department:
+SELECT first_name
+FROM employees e
+WHERE department_id = (
+    SELECT department_id
+    FROM employees
+    WHERE employee_id = e.manager_id
+);
+
+// Employees whose manager is in different department:
+SELECT first_name
+FROM employees e
+WHERE department_id <> (
+    SELECT department_id
+    FROM employees
+    WHERE employee_id = e.manager_id
+);
+
+
+4. Inline View Solutions
+
+// Employees earning > 10000:
+SELECT *
+FROM (SELECT * FROM employees)
+WHERE salary > 10000;
+
+// Departments with avg salary > 9000:
+SELECT department_id, avg_salary
+FROM (
+    SELECT department_id, AVG(salary) avg_salary
+    FROM employees
+    GROUP BY department_id
+)
+WHERE avg_salary > 9000;
+
+// Departments with more than 5 employees:
+SELECT department_id, emp_count
+FROM (
+    SELECT department_id, COUNT(*) emp_count
+    FROM employees
+    GROUP BY department_id
+)
+WHERE emp_count > 5;
+
+
+5. Advanced Subquery Logic
+
+// Employees above department avg:
+SELECT first_name, salary
+FROM employees e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
+    WHERE department_id = e.department_id
+);
+
+// Employees above job role average:
+SELECT first_name, salary, job_id
+FROM employees e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
+    WHERE job_id = e.job_id
+);
+
+// Departments where all employees earn > 5000:
+SELECT department_id
+FROM employees
+GROUP BY department_id
+HAVING MIN(salary) > 5000;
+
+// Employees who are only one in department:
+SELECT *
+FROM employees
+WHERE department_id IN (
+    SELECT department_id
+    FROM employees
+    GROUP BY department_id
+    HAVING COUNT(*) = 1
+);
+
+
+6. Executive HR Analytics
+
+// Employees above company avg:
+SELECT first_name, salary
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+// Departments with more employees than department 50:
+SELECT department_id
+FROM employees
+GROUP BY department_id
+HAVING COUNT(*) >
+(
+    SELECT COUNT(*)
+    FROM employees
+    WHERE department_id = 50
+);
+
+// Employees in highest avg salary department:
+SELECT first_name, department_id
+FROM employees
+WHERE department_id = (
+    SELECT department_id
+    FROM employees
+    GROUP BY department_id
+    ORDER BY AVG(salary) DESC
+    FETCH FIRST 1 ROW ONLY
+);
+
+// Employees earning second highest salary:
+SELECT first_name, salary
+FROM employees
+WHERE salary = (
+    SELECT MAX(salary)
+    FROM employees
+    WHERE salary < (SELECT MAX(salary) FROM employees)
+);
+
+// Managers whose employees avg salary > 10000:
+SELECT manager_id
+FROM employees
+GROUP BY manager_id
+HAVING AVG(salary) > 10000;
