@@ -1,0 +1,152 @@
+Query1:
+SELECT first_name, salary
+FROM employees
+WHERE salary > AVG(salary);
+
+
+Query Result:
+ORA-00934: group function is not allowed here
+
+
+https://docs.oracle.com/error-help/db/ora-00934/00934. 00000 -  "group function is not allowed here"
+*Cause:    One of the group functions, such as AVG, COUNT, MAX,
+           MIN, SUM, STDDEV, or VARIANCE, was used in a WHERE or GROUP BY
+           clause.
+*Action:   Remove the group function from the WHERE or GROUP BY
+           clause. The desired result may be achieved by including the
+           function in a subquery or HAVING clause.
+Error at Line: 3 Column: 16
+
+## this error is because we cannot use aggrigation
+function while filtering individual rows (where).
+Use having or a subquery instead.
+
+
+The correct query:
+SELECT *
+FROM employees
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
+);
+
+
+
+
+
+Query2:
+SELECT department_name
+ FROM departments
+ WHERE department_id = (
+        SELECT department_id
+        FROM employees
+);
+
+
+Query Result:
+ORA-00911: invalid character
+
+https://docs.oracle.com/error-help/db/ora-00911/00911. 00000 -  "%s: invalid character after %s"
+*Cause:    An invalid character has been encountered in the SQL statement.
+*Action:   Remove the invalid character. If it is part of an identifier,
+           enclose the identifier in double quotation marks.
+*Params:   1) character_value
+           2) token_value: The token after which the invalid character causing
+           the error occurs.
+Error at Line: 4 Column: 1
+
+
+## The error is not in the logic, it is beacuae of invalid character.
+
+
+The correct Query:
+SELECT department_name
+FROM departments
+WHERE department_id IN (
+    SELECT department_id
+    FROM employees
+);
+
+
+
+
+
+Query3:
+ SELECT *
+ FROM employees
+ WHERE department_id IN (
+        SELECT salary
+        FROM employees
+);
+
+
+Query Result:
+ORA-00911: invalid character
+
+https://docs.oracle.com/error-help/db/ora-00911/00911. 00000 -  "%s: invalid character after %s"
+*Cause:    An invalid character has been encountered in the SQL statement.
+*Action:   Remove the invalid character. If it is part of an identifier,
+           enclose the identifier in double quotation marks.
+*Params:   1) character_value
+           2) token_value: The token after which the invalid character causing
+           the error occurs.
+Error at Line: 4 Column: 1
+
+
+## This error is beacuae of query works, but it is meaningless logically.
+department_id IN (SELECT department_id FROM employees)
+because every department_id in employees exists in employees,
+so it return all employees.
+Also, Oracle found a wrong or hidden symbol in your SQL query (cannot understand).
+
+The correct Query:
+SELECT *
+FROM employees
+WHERE department_id IN (
+    SELECT department_id
+    FROM departments
+);
+
+
+
+
+
+Query4:
+SELECT first_name
+ FROM employees
+ WHERE salary > (
+    SELECT salary
+    FROM employees
+    WHERE department_id = 90
+ );
+
+
+ Query Result:
+ ORA-00911: invalid character
+
+https://docs.oracle.com/error-help/db/ora-00911/00911. 00000 -  "%s: invalid character after %s"
+*Cause:    An invalid character has been encountered in the SQL statement.
+*Action:   Remove the invalid character. If it is part of an identifier,
+           enclose the identifier in double quotation marks.
+*Params:   1) character_value
+           2) token_value: The token after which the invalid character causing
+           the error occurs.
+Error at Line: 4 Column: 1
+
+
+## This error is in the logic, subquery returns more than one row.
+
+
+The correct Query:
+SELECT first_name
+FROM employees
+WHERE salary IN (
+    SELECT salary
+    FROM employees
+    WHERE department_id = 90
+);
+
+
+
+
+
