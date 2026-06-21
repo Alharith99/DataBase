@@ -1,0 +1,201 @@
+This is the implementation of my project:
+
+
+     - Aggregation:
+	 
+1) Basic Aggregation:
+-- (a) Total employees per department:
+SELECT d.name AS department,
+COUNT(e.emp_id) AS employee_count
+FROM job_department d
+LEFT JOIN employee e ON d.job_id = e.job_id
+GROUP BY d.name
+ORDER BY employee_count DESC;
+
+-- (b) Min, max, average salary:
+SELECT MIN(sb.amount) AS min_salary,
+MAX(sb.amount) AS max_salary,
+AVG(sb.amount) AS avg_salary
+FROM salary_bonus sb;
+
+-- (c) Total bonus paid company-wide:
+SELECT SUM(sb.bonus) AS total_bonus_paid
+FROM salary_bonus sb;
+
+
+2) GROUP BY with HAVING:
+-- (a) Departments where average employee age exceeds 30:
+SELECT d.name, ROUND(AVG(e.age), 1) AS avg_age
+FROM job_department d
+JOIN employee e ON d.job_id = e.job_id
+GROUP BY d.name
+HAVING AVG(e.age) > 30;
+
+-- (b) Qualification positions held by more than 2 employees:
+SELECT q.position, COUNT(DISTINCT q.emp_id) AS emp_count
+FROM qualification q
+GROUP BY q.position
+HAVING COUNT(DISTINCT q.emp_id) > 2;
+
+-- (c) Months where total payroll exceeds 20,000:
+SELECT EXTRACT(YEAR FROM p.payroll_date) AS yr,
+EXTRACT(MONTH FROM p.payroll_date) AS mo,
+SUM(p.total_amount) AS monthly_total
+FROM payroll p
+GROUP BY EXTRACT(YEAR FROM p.payroll_date),
+EXTRACT(MONTH FROM p.payroll_date)
+HAVING SUM(p.total_amount) > 20000;
+
+
+
+
+     - Joins:
+
+1) INNER JOIN:
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+d.name AS department,
+q.position AS job_title,
+sb.amount AS salary,
+(SELECT MAX(l.leave_date)
+FROM leave_tab l
+WHERE l.emp_id = e.emp_id) AS latest_leave_date
+FROM employee e
+INNER JOIN job_department d ON e.job_id = d.job_id
+INNER JOIN salary_bonus sb ON e.salary_id = sb.salary_id
+INNER JOIN qualification q ON e.emp_id = q.emp_id
+INNER JOIN payroll p ON e.emp_id = p.emp_id
+GROUP BY e.emp_id, e.fname, e.lname, d.name, q.position, sb.amount;
+
+2) LEFT OUTER JOIN:
+-- (a) Employees who have never taken leave:
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+d.name AS department
+FROM employee e
+LEFT JOIN leave_tab l ON e.emp_id = l.emp_id
+JOIN job_department d ON e.job_id = d.job_id
+WHERE l.leave_id IS NULL;
+
+-- (b) Departments with no salary/bonus records:
+SELECT d.job_id, d.name
+FROM job_department d
+LEFT JOIN salary_bonus sb ON d.job_id = sb.job_id
+WHERE sb.salary_id IS NULL;
+
+
+
+
+     - Subqueries:
+	 
+1) Single-Row Subquery:
+-- (a) Employees earning more than company average salary:
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+sb.amount
+FROM employee e
+JOIN salary_bonus sb ON e.salary_id = sb.salary_id
+WHERE sb.amount > (SELECT AVG(amount) FROM salary_bonus);
+
+-- (b) Department with highest total payroll:
+SELECT d.name, sub.total
+FROM job_department d
+JOIN (
+SELECT job_id, SUM(total_amount) AS total
+FROM payroll
+GROUP BY job_id
+) sub ON d.job_id = sub.job_id
+WHERE sub.total = (
+SELECT MAX(SUM(total_amount))
+FROM payroll
+GROUP BY job_id
+);
+
+
+2)Multi-Row Subquery with IN / ANY / ALL:
+-- (a) Employees in departments with bonus > 500 (IN):
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+d.name AS department,
+sb.bonus
+FROM employee e
+JOIN job_department d ON e.job_id = d.job_id
+JOIN salary_bonus sb ON e.salary_id = sb.salary_id
+WHERE e.job_id IN (
+SELECT DISTINCT sb2.job_id
+FROM salary_bonus sb2
+WHERE sb2.bonus > 500
+);
+
+-- (b) Salary greater than ALL Maintenance salaries (ALL):
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+sb.amount
+FROM employee e
+JOIN salary_bonus sb ON e.salary_id = sb.salary_id
+WHERE sb.amount > ALL (
+SELECT sb2.amount
+FROM salary_bonus sb2
+JOIN job_department d ON sb2.job_id = d.job_id
+WHERE d.name = 'Maintenance'
+);
+
+-- (c) Salary greater than ANY HR salary (ANY):
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+sb.amount
+FROM employee e
+JOIN salary_bonus sb ON e.salary_id = sb.salary_id
+WHERE sb.amount > ANY (
+SELECT sb2.amount
+FROM salary_bonus sb2
+JOIN job_department d ON sb2.job_id = d.job_id
+WHERE d.name = 'HR'
+);
+
+
+
+
+     - Views:
+	 
+1)Simple Read-Only View:
+CREATE OR REPLACE VIEW vw_employee_summary AS
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+e.gender,
+e.age,
+d.name AS department_name,
+q.position AS job_title
+FROM employee e
+JOIN job_department d ON e.job_id = d.job_id
+LEFT JOIN qualification q ON e.emp_id = q.emp_id;
+
+-- (a) Female employees over 30
+SELECT emp_id, full_name, age, department_name
+FROM vw_employee_summary
+WHERE gender = 'F' AND age > 30;
+
+-- (b) Attempt INSERT through view - document error:
+-- Expected: virtual column not allowed here
+
+2) Payroll Dashboard View:
+CREATE OR REPLACE VIEW vw_payroll_dashboard AS
+SELECT p.payroll_id,
+e.fname || ' ' || e.lname AS employee_name,
+d.name AS department,
+sb.amount AS salary_amount,
+sb.bonus,
+l.reason AS leave_reason,
+p.payroll_date,
+p.total_amount
+FROM payroll p
+JOIN employee e ON p.emp_id = e.emp_id
+JOIN job_department d ON p.job_id = d.job_id
+JOIN salary_bonus sb ON p.salary_id = sb.salary_id
+LEFT JOIN leave_tab l ON p.leave_id = l.leave_id;
+
+-- Top 5 payroll records by total_amount
+SELECT payroll_id, employee_name, department, total_amount
+FROM vw_payroll_dashboard
+ORDER BY total_amount DESC
+FETCH FIRST 5 ROWS ONLY;
