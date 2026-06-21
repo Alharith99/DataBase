@@ -1,0 +1,128 @@
+     -Procedures:
+1) SP_ADD_EMPLOYEE:
+CREATE OR REPLACE PROCEDURE sp_add_employee (
+p_fname IN employee.fname%TYPE,
+p_lname IN employee.lname%TYPE,
+p_gender IN employee.gender%TYPE,
+p_age IN employee.age%TYPE,
+p_contact_add IN employee.contact_add%TYPE,
+p_emp_email IN employee.emp_email%TYPE,
+p_emp_pass IN employee.emp_pass%TYPE,
+p_job_id IN employee.job_id%TYPE,
+p_salary_id IN employee.salary_id%TYPE
+) AS
+v_count NUMBER;
+BEGIN
+SELECT COUNT(*) INTO v_count
+FROM employee
+WHERE LOWER(emp_email) = LOWER(p_emp_email);
+IF v_count > 0 THEN
+RAISE_APPLICATION_ERROR(-20010, 'Email already in use: ' || p_emp_email);
+END IF;
+INSERT INTO employee (emp_id, fname, lname, gender, age, contact_add,
+emp_email, emp_pass, job_id, salary_id)
+VALUES (emp_seq.NEXTVAL, p_fname, p_lname, p_gender, p_age, p_contact_add,
+LOWER(p_emp_email), p_emp_pass, p_job_id, p_salary_id);
+DBMS_OUTPUT.PUT_LINE('Employee ' || p_fname || ' ' || p_lname || ' added successfully.');
+END sp_add_employee;
+
+
+2) FN_NET_SALARY:
+CREATE OR REPLACE FUNCTION fn_net_salary (p_emp_id IN NUMBER)
+RETURN NUMBER AS
+v_net NUMBER;
+BEGIN
+SELECT sb.amount + sb.bonus INTO v_net
+FROM employee e
+JOIN salary_bonus sb ON e.salary_id = sb.salary_id
+WHERE e.emp_id = p_emp_id;
+RETURN v_net;
+EXCEPTION
+WHEN NO_DATA_FOUND THEN RETURN NULL;
+END fn_net_salary;
+/
+SELECT e.emp_id,
+e.fname || ' ' || e.lname AS full_name,
+fn_net_salary(e.emp_id) AS net_salary
+FROM employee e
+ORDER BY net_salary DESC NULLS LAST;
+
+
+
+
+     -Triggers:
+
+1)TRG_EMP_ID:
+CREATE OR REPLACE TRIGGER trg_emp_id
+BEFORE INSERT ON employee
+FOR EACH ROW
+BEGIN
+IF :NEW.emp_id IS NULL THEN
+:NEW.emp_id := emp_seq.NEXTVAL;
+END IF;
+END;
+
+2)TRG_EMP_WELCOME_LOG:
+CREATE OR REPLACE TRIGGER trg_emp_welcome_log
+AFTER INSERT ON employee
+FOR EACH ROW
+BEGIN
+INSERT INTO employee_log (log_id, emp_id, action)
+VALUES (emp_log_seq.NEXTVAL, :NEW.emp_id, 'NEW HIRE');
+END;
+
+
+
+
+     - Scheduler Jobs
+1) One-Time Scheduler Job:
+BEGIN
+BEGIN
+DBMS_SCHEDULER.DROP_JOB('JOB_GREET_EMPLOYEES', FORCE => TRUE);
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+DBMS_SCHEDULER.CREATE_JOB(
+job_name => 'JOB_GREET_EMPLOYEES',
+job_type => 'PLSQL_BLOCK',
+job_action => q'[
+BEGIN
+DBMS_OUTPUT.PUT_LINE('Payroll System Initialized');
+INSERT INTO employee_log (log_id, emp_id, action)
+VALUES (emp_log_seq.NEXTVAL, NULL, 'Payroll System Initialized');
+COMMIT;
+END;
+]',
+start_date => SYSTIMESTAMP + INTERVAL '2' MINUTE,
+enabled => TRUE
+);
+END;
+
+2) Recurring Daily Job:
+BEGIN
+BEGIN
+DBMS_SCHEDULER.DROP_JOB('JOB_DAILY_LEAVE_REPORT', FORCE => TRUE);
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+DBMS_SCHEDULER.CREATE_JOB(
+job_name => 'JOB_DAILY_LEAVE_REPORT',
+job_type => 'PLSQL_BLOCK',
+job_action => q'[
+DECLARE v_count NUMBER;
+BEGIN
+SELECT COUNT(*) INTO v_count
+FROM leave_tab
+WHERE TRUNC(leave_date) = TRUNC(SYSDATE);
+INSERT INTO employee_log (log_id, emp_id, action)
+VALUES (emp_log_seq.NEXTVAL, NULL, 'Daily leave count: ' || v_count);
+COMMIT;
+END;
+]',
+start_date => TRUNC(SYSDATE) + 1 + 7/24,
+repeat_interval => 'FREQ=DAILY; BYHOUR=7; BYMINUTE=0; BYSECOND=0',
+enabled => TRUE
+);
+END;
+/
+SELECT job_name, job_type, repeat_interval, enabled, state
+FROM user_scheduler_jobs
+WHERE job_name = 'JOB_DAILY_LEAVE_REPORT';
