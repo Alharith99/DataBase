@@ -1,0 +1,7 @@
+webapp/**/node_modules/
+webapp/client/dist/
+webapp/client/.vite/
+**/.DS_Store
+demo/slides/
+demo/frames/
+demo/concat.txt
